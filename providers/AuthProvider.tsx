@@ -8,6 +8,7 @@ import React, {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { authService, userService, User } from "../lib/api";
+import socialAuthService from "../lib/api/social-auth";
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,10 @@ interface AuthContextType {
   logout: () => Promise<void>;
   loginWithOtp: (email: string, otp: string) => Promise<void>;
   requestOtp: (email: string) => Promise<void>;
+  loginWithSocial: (
+    provider: "google" | "apple",
+    token: string
+  ) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -113,12 +118,51 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (userData: any) => {
     setIsLoading(true);
     try {
+      console.log(
+        "AuthProvider.register called with:",
+        JSON.stringify(userData)
+      );
+      // Check for missing required fields
+      const requiredFields = [
+        "firstName",
+        "lastName",
+        "email",
+        "password",
+        "acceptTerms",
+      ];
+      const missingFields = requiredFields.filter((field) => !userData[field]);
+
+      if (missingFields.length > 0) {
+        console.error(
+          "Missing required fields for registration:",
+          missingFields
+        );
+        throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
+      }
+
       const result = await authService.register(userData);
+
+      // Save tokens to storage
+      if (result.token) {
+        await AsyncStorage.setItem("token", result.token);
+        if (result.refreshToken) {
+          await AsyncStorage.setItem("refreshToken", result.refreshToken);
+        }
+      }
+
       setUser(result.user);
       setToken(result.token);
       navigateBasedOnRole(result.user.role);
-    } catch (error) {
-      console.error("Register error:", error);
+    } catch (error: any) {
+      console.error("Register error details:", error);
+      // Check for specific error conditions
+      if (error.response) {
+        console.error("Server response:", error.response.data);
+      } else if (error.request) {
+        console.error(
+          "No response received. Network issue or server unreachable."
+        );
+      }
       throw error;
     } finally {
       setIsLoading(false);
@@ -163,6 +207,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const loginWithSocial = async (
+    provider: "google" | "apple",
+    token: string
+  ) => {
+    setIsLoading(true);
+    try {
+      const result = await socialAuthService.login(provider, token);
+      setUser(result.user);
+      setToken(result.access_token);
+
+      // Save tokens to storage
+      await AsyncStorage.setItem("token", result.access_token);
+      await AsyncStorage.setItem("refreshToken", result.refresh_token);
+
+      // Navigate based on user role
+      navigateBasedOnRole(result.user.role);
+    } catch (error) {
+      // Don't log to console, just throw the error for UI handling
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     token,
@@ -173,6 +241,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     loginWithOtp,
     requestOtp,
+    loginWithSocial,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -15,6 +15,7 @@ export interface Theme {
   input: string;
   ring: string;
   radius: string;
+  link: string;
 }
 
 export const LIGHT_THEME: Theme = {
@@ -34,6 +35,7 @@ export const LIGHT_THEME: Theme = {
   input: '#e2e8f0',
   ring: '#0f172a',
   radius: '0.5rem',
+  link: '#2563eb',
 };
 
 export const DARK_THEME: Theme = {
@@ -53,4 +55,5 @@ export const DARK_THEME: Theme = {
   input: '#1e293b',
   ring: '#cbd5e1',
   radius: '0.5rem',
+  link: '#3b82f6',
 }; 

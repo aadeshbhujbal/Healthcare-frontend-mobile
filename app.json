@@ -22,7 +22,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.healthcare.app"
+      "package": "com.healthcare.app",
+      "permissions": ["android.permission.INTERNET"],
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",

@@ -5,10 +5,17 @@ import { useColorScheme } from "~/lib/useColorScheme";
 import { View, TouchableOpacity } from "react-native";
 import { Text } from "~/components/ui/text";
 import { Icon } from "~/components/ui/icon";
+import { ThemeToggle } from "~/components/ThemeToggle";
+import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 
 export default function AuthLayout() {
   const { isDarkColorScheme } = useColorScheme();
   const router = useRouter();
+
+  // Set Android navigation bar on component mount
+  React.useEffect(() => {
+    setAndroidNavigationBar(isDarkColorScheme ? "dark" : "light");
+  }, [isDarkColorScheme]);
 
   const HeaderLeft = () => (
     <TouchableOpacity onPress={() => router.back()} className="p-2">
@@ -20,6 +27,12 @@ export default function AuthLayout() {
     </TouchableOpacity>
   );
 
+  const HeaderRight = () => (
+    <View className="mr-4">
+      <ThemeToggle />
+    </View>
+  );
+
   return (
     <>
       <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
@@ -27,6 +40,7 @@ export default function AuthLayout() {
         screenOptions={{
           headerShown: true,
           headerLeft: HeaderLeft,
+          headerRight: HeaderRight,
           headerTitle: "",
           headerShadowVisible: false,
           headerStyle: {

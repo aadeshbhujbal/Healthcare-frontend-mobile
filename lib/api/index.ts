@@ -4,6 +4,7 @@ import userService from './userService';
 import clinicService from './clinicService';
 import healthService from './healthService';
 import cacheService from './cacheService';
+import socialAuthService from './social-auth';
 
 export {
   apiClient,
@@ -11,7 +12,8 @@ export {
   userService,
   clinicService,
   healthService,
-  cacheService
+  cacheService,
+  socialAuthService
 };
 
 // Re-export types
@@ -19,4 +21,5 @@ export * from './authService';
 export * from './userService';
 export * from './clinicService';
 export * from './healthService';
-export * from './cacheService'; 
+export * from './cacheService';
+export * from './social-auth'; 

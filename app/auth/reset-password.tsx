@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { Controller } from "react-hook-form";
 import { resetPasswordSchema, ResetPasswordFormData } from "~/lib/validations";
@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { Input } from "~/components/ui/input";
 import { FormAlert } from "~/components/FormAlert";
+import LinkText from "~/components/ui/LinkText";
 
 export default function ResetPasswordScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
@@ -58,86 +59,100 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background p-6 justify-center">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      className="flex-1 bg-background"
+    >
       <FormAlert data={alertData} onClose={hideAlert} />
 
-      <View className="bg-card rounded-lg p-6 shadow-sm border border-border">
-        <Text className="text-2xl font-bold text-center mb-2">
-          Reset Password
-        </Text>
+      <ScrollView
+        contentContainerClassName="p-6 flex-1 justify-center"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="bg-card rounded-xl p-6 shadow-md border border-border">
+          <Text className="text-2xl font-bold text-center mb-3">
+            Reset Password
+          </Text>
 
-        <Text className="text-muted-foreground text-center mb-6">
-          Enter your new password below
-        </Text>
+          <Text className="text-muted-foreground text-center mb-8">
+            Enter your new password below
+          </Text>
 
-        <View className="space-y-4">
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <Input
-                  placeholder="New Password"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  secureTextEntry
-                  className="mb-1"
-                />
-                {errors.password && (
-                  <Text className="text-destructive text-xs ml-1">
-                    {errors.password.message}
-                  </Text>
-                )}
+          <View className="space-y-5">
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View>
+                  <Input
+                    placeholder="New Password"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    secureTextEntry
+                    className="bg-muted h-14 px-4 text-base"
+                  />
+                  {errors.password && (
+                    <Text className="text-destructive text-xs ml-1 mt-1">
+                      {errors.password.message}
+                    </Text>
+                  )}
+                </View>
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View>
+                  <Input
+                    placeholder="Confirm New Password"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    secureTextEntry
+                    className="bg-muted h-14 px-4 text-base"
+                  />
+                  {errors.confirmPassword && (
+                    <Text className="text-destructive text-xs ml-1 mt-1">
+                      {errors.confirmPassword.message}
+                    </Text>
+                  )}
+                </View>
+              )}
+            />
+
+            {!token && (
+              <View className="bg-destructive/10 p-4 rounded-md mb-3">
+                <Text className="text-destructive text-base">
+                  Reset token is missing. Please use the link from the email.
+                </Text>
               </View>
             )}
-          />
 
-          <Controller
-            control={control}
-            name="confirmPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <Input
-                  placeholder="Confirm New Password"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  secureTextEntry
-                  className="mb-1"
-                />
-                {errors.confirmPassword && (
-                  <Text className="text-destructive text-xs ml-1">
-                    {errors.confirmPassword.message}
-                  </Text>
-                )}
-              </View>
-            )}
-          />
+            <Button
+              onPress={handleSubmit(onSubmit)}
+              disabled={isLoading || !token}
+              className="w-full bg-primary h-14 mt-2"
+            >
+              <Text className="text-primary-foreground font-semibold text-base">
+                {isLoading ? "Resetting..." : "Reset Password"}
+              </Text>
+            </Button>
 
-          {!token && (
-            <Text className="text-destructive text-sm">
-              Reset token is missing. Please use the link from the email.
-            </Text>
-          )}
-
-          <Button
-            onPress={handleSubmit(onSubmit)}
-            disabled={isLoading || !token}
-            className="w-full"
-          >
-            {isLoading ? "Resetting..." : "Reset Password"}
-          </Button>
-
-          <View className="items-center mt-4">
-            <Link href="/auth/login" asChild>
-              <Button variant="link" className="p-0">
-                <Text>Back to Login</Text>
-              </Button>
-            </Link>
+            <View className="flex-row items-center justify-center mt-6">
+              <Link href="/auth/login" asChild>
+                <Button variant="link" className="p-0 h-auto min-h-0">
+                  <LinkText size="base" bold>
+                    Back to Login
+                  </LinkText>
+                </Button>
+              </Link>
+            </View>
           </View>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
